@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mac Smith</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #111;
+    --white: #fafaf8;
+    --gray: #888;
+    --light: #f0ede8;
+    --border: rgba(0,0,0,0.1);
+    --serif: 'Playfair Display', Georgia, serif;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  html { font-size: 16px; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--white);
+    color: var(--black);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.25rem 2rem 1rem;
+  }
+
+  .site-name {
+    font-family: var(--serif);
+    font-size: 1.75rem;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    user-select: none;
+  }
+  .site-name:hover { opacity: 0.5; }
+
+  .site-tagline {
+    font-size: 0.75rem;
+    color: var(--gray);
+    letter-spacing: 0.06em;
+    margin-top: 2px;
+    font-weight: 300;
+  }
+
+  /* ── PAGES ── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── LANDING ── */
+  #landing {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 3rem 2rem 8rem;
+  }
+
+  .track-row {
+    display: grid;
+    grid-template-columns: 44px 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 0.5rem;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.15s;
+    border-radius: 6px;
+  }
+  .track-row:first-child { border-top: 1px solid var(--border); }
+  .track-row:hover { background: var(--light); }
+  .track-row:hover .track-title { text-decoration: underline; text-underline-offset: 3px; }
+
+  .play-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--black);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .play-btn:hover { opacity: 0.75; }
+  .play-btn:active { transform: scale(0.95); }
+  .play-btn svg { width: 14px; height: 14px; fill: white; margin-left: 2px; }
+  .play-btn.is-playing svg { margin-left: 0; }
+
+  .track-meta { min-width: 0; }
+  .track-title {
+    font-size: 0.95rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .track-genre {
+    font-size: 0.75rem;
+    color: var(--gray);
+    margin-top: 2px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+  }
+
+  .track-progress {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+  .track-time {
+    font-size: 0.7rem;
+    color: var(--gray);
+    font-variant-numeric: tabular-nums;
+    min-width: 36px;
+    text-align: right;
+  }
+  .progress-bar {
+    width: 80px;
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--black);
+    border-radius: 2px;
+    transition: width 0.25s linear;
+  }
+
+  /* ── DETAIL PAGE ── */
+  #detail {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem 8rem;
+  }
+
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: var(--gray);
+    cursor: pointer;
+    margin-bottom: 2rem;
+    transition: color 0.15s;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    background: none;
+    border: none;
+  }
+  .back-btn:hover { color: var(--black); }
+  .back-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  .detail-genre {
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--gray);
+    text-transform: uppercase;
+    font-weight: 400;
+    margin-bottom: 0.5rem;
+  }
+
+  .detail-title {
+    font-family: var(--serif);
+    font-size: 2.5rem;
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 2rem;
+  }
+
+  .detail-player {
+    background: var(--light);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .detail-play-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--black);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: opacity 0.15s;
+  }
+  .detail-play-btn:hover { opacity: 0.75; }
+  .detail-play-btn svg { width: 13px; height: 13px; fill: white; margin-left: 2px; }
+  .detail-play-btn.is-playing svg { margin-left: 0; }
+
+  .detail-player-track { font-size: 0.85rem; font-weight: 500; margin-bottom: 6px; }
+  .detail-progress-wrap { flex: 1; }
+  .detail-progress-bar {
+    width: 100%;
+    height: 3px;
+    background: rgba(0,0,0,0.12);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+  .detail-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--black);
+    border-radius: 2px;
+    transition: width 0.25s linear;
+  }
+  .detail-time {
+    font-size: 0.7rem;
+    color: var(--gray);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .detail-description {
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: #444;
+    font-weight: 300;
+    margin-bottom: 2rem;
+  }
+  .detail-description a {
+    color: var(--black);
+    font-weight: 400;
+  }
+
+  .detail-media { display: flex; flex-direction: column; gap: 1.25rem; }
+
+  .detail-media img {
+    width: 100%;
+    border-radius: 10px;
+    display: block;
+  }
+  .detail-media .detail-gif {
+    width: 100%;
+    border-radius: 10px;
+    display: block;
+  }
+  .detail-media video {
+    width: 100%;
+    border-radius: 10px;
+    display: block;
+    background: #000;
+  }
+
+  /* ── ABOUT PAGE ── */
+  #about {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 3rem 2rem 8rem;
+  }
+
+  .about-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--gray);
+    text-transform: uppercase;
+    font-weight: 400;
+    margin-bottom: 0.5rem;
+  }
+
+  .about-heading {
+    font-family: var(--serif);
+    font-size: 2.5rem;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    margin-bottom: 2.5rem;
+  }
+
+  .about-layout {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 2.5rem;
+    align-items: start;
+  }
+
+  .about-photo-wrap img {
+    width: 100%;
+    border-radius: 10px;
+    display: block;
+  }
+  .about-photo-caption {
+    font-size: 0.75rem;
+    color: var(--gray);
+    text-align: center;
+    margin-top: 8px;
+    font-weight: 300;
+  }
+
+  .about-body { font-size: 0.9rem; line-height: 1.85; font-weight: 300; color: #333; }
+  .about-body p { margin-bottom: 1.1rem; }
+  .about-body strong { font-weight: 500; color: var(--black); }
+  .about-body a { color: var(--black); font-weight: 400; }
+  .about-hey {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: var(--gray);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 1rem;
+  }
+
+  /* ── MINI PLAYER ── */
+  #mini-player {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--black);
+    color: white;
+    padding: 0.75rem 2rem;
+    display: none;
+    align-items: center;
+    gap: 1rem;
+    z-index: 200;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  #mini-player.visible { display: flex; }
+
+  .mini-play-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: opacity 0.15s;
+  }
+  .mini-play-btn:hover { opacity: 0.8; }
+  .mini-play-btn svg { width: 11px; height: 11px; fill: black; margin-left: 1px; }
+  .mini-play-btn.is-playing svg { margin-left: 0; }
+
+  .mini-info { flex: 1; min-width: 0; }
+  .mini-title { font-size: 0.8rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mini-genre { font-size: 0.7rem; color: rgba(255,255,255,0.5); margin-top: 1px; font-weight: 300; }
+
+  .mini-progress-bar {
+    width: 100px;
+    height: 2px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .mini-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: white;
+    border-radius: 2px;
+    transition: width 0.25s linear;
+  }
+
+  .mini-close-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.5);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    transition: color 0.15s;
+    flex-shrink: 0;
+  }
+  .mini-close-btn:hover { color: white; }
+  .mini-close-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  @media (max-width: 520px) {
+    .about-layout { grid-template-columns: 1fr; }
+    .detail-title, .about-heading { font-size: 1.8rem; }
+    .progress-bar { width: 50px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="site-name" id="site-name">Mac Smith</div>
+  <div class="site-tagline">Welcome to my portfolio!</div>
+</header>
+
+<!-- LANDING -->
+<div class="page active" id="landing">
+  <div id="track-list"></div>
+</div>
+
+<!-- DETAIL -->
+<div class="page" id="detail">
+  <button class="back-btn" id="back-btn">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    back
+  </button>
+  <div class="detail-genre" id="d-genre"></div>
+  <h1 class="detail-title" id="d-title"></h1>
+  <div class="detail-player">
+    <button class="detail-play-btn" id="d-play-btn">
+      <svg id="d-play-icon" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+    </button>
+    <div class="detail-progress-wrap">
+      <div class="detail-player-track" id="d-track-label"></div>
+      <div class="detail-progress-bar"><div class="detail-progress-fill" id="d-progress"></div></div>
+      <div class="detail-time" id="d-time">0:00</div>
+    </div>
+  </div>
+  <div class="detail-description" id="d-desc"></div>
+  <div class="detail-media" id="d-media"></div>
+</div>
+
+<!-- ABOUT -->
+<div class="page" id="about">
+  <span class="about-label">Portfolio</span>
+  <h2 class="about-heading">About</h2>
+  <div class="about-layout">
+    <div class="about-photo-wrap">
+      <img src="images/Picture_About.png" alt="Mac Smith">
+      <div class="about-photo-caption">Musician, Engineer, Producer</div>
+    </div>
+    <div class="about-body">
+      <span class="about-hey">Hey</span>
+      <p>I'm Mac. I'm a music producer, arranger, and audio engineer currently based in Philadelphia, PA.</p>
+      <p>I recently graduated from Berklee College of Music, where I studied Contemporary Writing & Production. Alongside my studies, I trained as a live audio engineer, working on campus and for venues and production companies in the Boston area.</p>
+      <p>My portfolio includes personal and professional work, including my jingle for <a href="https://www.minglemocktails.com/" target="_blank">Mingle Mocktails'</a> <strong>"Let's Mingle"</strong> marketing campaign. I'm comfortable writing across a range of styles — pop, electronic, jazz, big band, and orchestral music.</p>
+      <p>I'm looking to establish a career in writing music for media and collaborative creative projects. Reach out at <a href="mailto:kmacsmith.music@gmail.com"><strong>kmacsmith.music@gmail.com</strong></a></p>
+    </div>
+  </div>
+</div>
+
+<!-- MINI PLAYER -->
+<div id="mini-player">
+  <button class="mini-play-btn" id="mini-play-btn">
+    <svg id="mini-play-icon" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+  </button>
+  <div class="mini-info">
+    <div class="mini-title" id="mini-title"></div>
+    <div class="mini-genre" id="mini-genre"></div>
+  </div>
+  <div class="mini-progress-bar"><div class="mini-progress-fill" id="mini-progress"></div></div>
+  <button class="mini-close-btn" id="mini-close">
+    <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+</div>
+
+<script>
+const tracks = [
+  {
+    id: 'minglemocktails',
+    title: 'Mingle Mocktails',
+    genre: 'Jingle',
+    audio: 'audio/jingle_minglemocktails.mp3',
+    description: 'During my junior year, I pitched a jingle concept to <a href="https://www.minglemocktails.com/" target="_blank">Mingle Mocktails</a> that was later integrated into a larger marketing campaign. The campaign supported the launch of a new flavor and helped engage a younger demographic. We chose an upbeat pop sound to match the brand\'s energy and appeal.',
+    media: [{ type: 'gif', src: 'images/gif_minglemocktails.gif', alt: 'Mingle Mocktails campaign' }]
+  },
+  {
+    id: 'momo',
+    title: 'Momo',
+    genre: 'String Quartet',
+    audio: 'audio/StringQuartet_Momo.mp3',
+    description: '',
+    media: [{ type: 'img', src: 'images/Picture_Momo.jpg', alt: 'Momo' }]
+  },
+  {
+    id: 'breakingbad',
+    title: 'Breaking Bad',
+    genre: 'Pop',
+    audio: 'audio/Pop_BreakingBad.mp3',
+    description: 'While in school, I often practiced piano while watching Breaking Bad in the background. I used the series as inspiration for a song for my capstone.',
+    media: []
+  },
+  {
+    id: 'pradarescore',
+    title: 'Prada Rescore',
+    genre: 'Orchestral',
+    audio: 'audio/Orchestral_PradaRescore.mp3',
+    description: 'Created as an exercise for class.',
+    media: [{ type: 'video', src: 'video/Video_PradaRescore.mp4', alt: 'Prada Rescore' }]
+  },
+  {
+    id: 'slide',
+    title: 'Slide',
+    genre: 'Disco',
+    audio: 'audio/Disco_slide.mp3',
+    description: '',
+    media: []
+  },
+  {
+    id: 'puertorico',
+    title: 'Puerto Rico',
+    genre: 'Piano Tribute',
+    audio: 'audio/PianoTribute_puertorico.mp3',
+    description: '',
+    media: []
+  }
+];
+
+// ── STATE ──
+let currentAudio = null;
+let currentTrackIdx = null;
+let progressInterval = null;
+let currentPage = 'landing';
+let miniVisible = false;
+
+// ── ICONS ──
+const iconPlay = `<polygon points="5,3 19,12 5,21"/>`;
+const iconPause = `<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>`;
+
+function playIcon(el) { el.innerHTML = iconPlay; el.style.paddingLeft = '2px'; }
+function pauseIcon(el) { el.innerHTML = iconPause; el.style.paddingLeft = '0'; }
+
+// ── RENDER LANDING ──
+function renderLanding() {
+  const list = document.getElementById('track-list');
+  list.innerHTML = '';
+  tracks.forEach((t, i) => {
+    const row = document.createElement('div');
+    row.className = 'track-row';
+    row.innerHTML = `
+      <button class="play-btn" id="play-btn-${i}" aria-label="Play ${t.title}">
+        <svg viewBox="0 0 24 24">${iconPlay}</svg>
+      </button>
+      <div class="track-meta">
+        <div class="track-title">${t.title}</div>
+        <div class="track-genre">${t.genre}</div>
+      </div>
+      <div class="track-progress">
+        <div class="track-time" id="time-${i}">—</div>
+        <div class="progress-bar"><div class="progress-fill" id="prog-${i}"></div></div>
+      </div>
+    `;
+    row.querySelector('.play-btn').addEventListener('click', e => { e.stopPropagation(); togglePlay(i); });
+    row.addEventListener('click', () => openDetail(i));
+    list.appendChild(row);
+  });
+}
+
+// ── AUDIO ──
+function togglePlay(idx) {
+  if (currentTrackIdx === idx && currentAudio && !currentAudio.paused) {
+    pauseTrack();
+    return;
+  }
+  if (currentTrackIdx !== idx) {
+    stopTrack();
+    currentTrackIdx = idx;
+    currentAudio = new Audio(tracks[idx].audio);
+    currentAudio.addEventListener('ended', () => { stopTrack(); });
+  }
+  currentAudio.play().catch(() => {});
+  startProgressLoop();
+  updateAllUI();
+}
+
+function pauseTrack() {
+  if (currentAudio) currentAudio.pause();
+  clearInterval(progressInterval);
+  updateAllUI();
+}
+
+function stopTrack() {
+  if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; }
+  clearInterval(progressInterval);
+  currentTrackIdx = null;
+  hideMini();
+  updateAllUI();
+}
+
+function startProgressLoop() {
+  clearInterval(progressInterval);
+  progressInterval = setInterval(() => {
+    if (!currentAudio) return;
+    const pct = currentAudio.duration ? (currentAudio.currentTime / currentAudio.duration) * 100 : 0;
+    const t = formatTime(currentAudio.currentTime);
+    // landing row
+    if (currentPage === 'landing') {
+      const fill = document.getElementById('prog-' + currentTrackIdx);
+      const timeEl = document.getElementById('time-' + currentTrackIdx);
+      if (fill) fill.style.width = pct + '%';
+      if (timeEl) timeEl.textContent = t;
+    }
+    // detail player
+    if (currentPage === 'detail') {
+      document.getElementById('d-progress').style.width = pct + '%';
+      document.getElementById('d-time').textContent = t;
+    }
+    // mini
+    document.getElementById('mini-progress').style.width = pct + '%';
+  }, 200);
+}
+
+function formatTime(s) {
+  if (!s || isNaN(s)) return '0:00';
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return m + ':' + (sec < 10 ? '0' : '') + sec;
+}
+
+// ── UI SYNC ──
+function updateAllUI() {
+  const playing = currentAudio && !currentAudio.paused;
+  // landing buttons
+  tracks.forEach((_, i) => {
+    const btn = document.getElementById('play-btn-' + i);
+    if (!btn) return;
+    const svg = btn.querySelector('svg');
+    if (i === currentTrackIdx && playing) {
+      svg.innerHTML = iconPause;
+      btn.classList.add('is-playing');
+    } else {
+      svg.innerHTML = iconPlay;
+      btn.classList.remove('is-playing');
+      const fill = document.getElementById('prog-' + i);
+      const timeEl = document.getElementById('time-' + i);
+      if (i !== currentTrackIdx) {
+        if (fill) fill.style.width = '0%';
+        if (timeEl) timeEl.textContent = '—';
+      }
+    }
+  });
+  // detail play btn
+  const dBtn = document.getElementById('d-play-btn');
+  const dIcon = document.getElementById('d-play-icon');
+  if (dBtn && dIcon) {
+    if (playing) { dIcon.innerHTML = iconPause; dBtn.classList.add('is-playing'); }
+    else { dIcon.innerHTML = iconPlay; dBtn.classList.remove('is-playing'); }
+  }
+  // mini
+  const mBtn = document.getElementById('mini-play-btn');
+  const mIcon = document.getElementById('mini-play-icon');
+  if (mBtn && mIcon) {
+    if (playing) { mIcon.innerHTML = iconPause; mBtn.classList.add('is-playing'); }
+    else { mIcon.innerHTML = iconPlay; mBtn.classList.remove('is-playing'); }
+  }
+  // mini visibility
+  if (currentTrackIdx !== null && currentPage !== 'landing') {
+    showMini(currentTrackIdx);
+  }
+}
+
+// ── MINI PLAYER ──
+function showMini(idx) {
+  const t = tracks[idx];
+  document.getElementById('mini-title').textContent = t.title;
+  document.getElementById('mini-genre').textContent = t.genre;
+  document.getElementById('mini-player').classList.add('visible');
+  miniVisible = true;
+}
+
+function hideMini() {
+  document.getElementById('mini-player').classList.remove('visible');
+  miniVisible = false;
+}
+
+document.getElementById('mini-play-btn').addEventListener('click', () => {
+  if (!currentAudio) return;
+  if (currentAudio.paused) { currentAudio.play(); startProgressLoop(); }
+  else currentAudio.pause();
+  updateAllUI();
+});
+
+document.getElementById('mini-close').addEventListener('click', stopTrack);
+
+// ── DETAIL PAGE ──
+function openDetail(idx) {
+  const t = tracks[idx];
+  document.getElementById('d-genre').textContent = t.genre;
+  document.getElementById('d-title').textContent = t.title;
+  document.getElementById('d-track-label').textContent = t.title + ' — ' + t.genre;
+  document.getElementById('d-desc').innerHTML = t.description;
+  document.getElementById('d-progress').style.width = '0%';
+  document.getElementById('d-time').textContent = '0:00';
+
+  // media
+  const mediaEl = document.getElementById('d-media');
+  mediaEl.innerHTML = '';
+  t.media.forEach(m => {
+    if (m.type === 'img') {
+      const img = document.createElement('img');
+      img.src = m.src; img.alt = m.alt;
+      mediaEl.appendChild(img);
+    } else if (m.type === 'gif') {
+      const img = document.createElement('img');
+      img.src = m.src; img.alt = m.alt; img.className = 'detail-gif';
+      mediaEl.appendChild(img);
+    } else if (m.type === 'video') {
+      const vid = document.createElement('video');
+      vid.src = m.src; vid.controls = true; vid.preload = 'metadata';
+      mediaEl.appendChild(vid);
+    }
+  });
+
+  showPage('detail');
+  if (currentTrackIdx !== null) showMini(currentTrackIdx);
+  updateAllUI();
+}
+
+document.getElementById('d-play-btn').addEventListener('click', () => {
+  if (currentTrackIdx === null) {
+    // figure out which track this detail page is for
+    const title = document.getElementById('d-title').textContent;
+    const idx = tracks.findIndex(t => t.title === title);
+    if (idx >= 0) togglePlay(idx);
+  } else {
+    if (currentAudio && !currentAudio.paused) pauseTrack();
+    else if (currentAudio) { currentAudio.play(); startProgressLoop(); updateAllUI(); }
+  }
+});
+
+document.getElementById('back-btn').addEventListener('click', () => {
+  showPage('landing');
+  if (currentTrackIdx === null) hideMini();
+  updateAllUI();
+});
+
+// ── ABOUT / NAV ──
+document.getElementById('site-name').addEventListener('click', () => {
+  if (currentPage === 'about') {
+    showPage('landing');
+  } else {
+    showPage('about');
+    if (currentTrackIdx !== null) showMini(currentTrackIdx);
+  }
+});
+
+// ── PAGE SWITCH ──
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(name).classList.add('active');
+  currentPage = name;
+  window.scrollTo(0, 0);
+  if (name === 'landing') hideMini();
+}
+
+// ── INIT ──
+renderLanding();
+</script>
+</body>
+</html>
