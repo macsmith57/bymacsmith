@@ -82,24 +82,21 @@ main {
 }
 
 .video-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 32px 28px;
   padding-bottom: 24px;
 }
 
-.video-card {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  flex: 1 1 320px;
-  max-width: 340px;
+@media (max-width: 860px) {
+  .video-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 560px) {
-  .video-card { flex-basis: 100%; max-width: 100%; }
+  .video-grid { grid-template-columns: 1fr; }
 }
+
+.video-card { display: flex; flex-direction: column; gap: 12px; }
 
 .video-frame {
   position: relative;
