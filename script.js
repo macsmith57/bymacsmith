@@ -1,7 +1,12 @@
 // Add new work here — each entry becomes a card in the grid automatically.
+// Use { comingSoon: true, title: '...' } for a placeholder card with no video yet.
 const videos = [
   { id: 'RdVNmd8q7yU', title: 'Microsoft Re-Score' },
   { id: 'Rx9yYFhYUnk', title: 'Nudnix App Sounds' },
+  { comingSoon: true, title: 'Coming Soon' },
+  { comingSoon: true, title: 'Coming Soon' },
+  { comingSoon: true, title: 'Coming Soon' },
+  { comingSoon: true, title: 'Coming Soon' },
 ];
 
 const grid = document.getElementById('video-grid');
@@ -12,15 +17,21 @@ for (const video of videos) {
 
   const frame = document.createElement('div');
   frame.className = 'video-frame';
-  frame.innerHTML = `
-    <img src="https://i.ytimg.com/vi/${video.id}/hqdefault.jpg" alt="${video.title} thumbnail" loading="lazy">
-    <span class="play-button">
-      <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-    </span>
-  `;
-  frame.addEventListener('click', () => {
-    frame.innerHTML = `<iframe src="https://www.youtube.com/embed/${video.id}?autoplay=1&rel=0&modestbranding=1" title="${video.title}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
-  }, { once: true });
+
+  if (video.comingSoon) {
+    frame.classList.add('video-frame--placeholder');
+    frame.innerHTML = `<span class="coming-soon-label">Coming Soon</span>`;
+  } else {
+    frame.innerHTML = `
+      <img src="https://i.ytimg.com/vi/${video.id}/hqdefault.jpg" alt="${video.title} thumbnail" loading="lazy">
+      <span class="play-button">
+        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      </span>
+    `;
+    frame.addEventListener('click', () => {
+      frame.innerHTML = `<iframe src="https://www.youtube.com/embed/${video.id}?autoplay=1&rel=0&modestbranding=1" title="${video.title}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+    }, { once: true });
+  }
 
   const title = document.createElement('div');
   title.className = 'video-title';
