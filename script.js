@@ -1,11 +1,11 @@
 // Add new work here — each entry becomes a card in the grid automatically.
 // Use { comingSoon: true, title: '...' } for a placeholder card with no video yet.
 const videos = [
-  { id: 'RdVNmd8q7yU', title: 'Microsoft Re-Score' },
-  { id: 'Rx9yYFhYUnk', title: 'Nudnix App Sounds' },
+  { id: 'wXNNYoymvV4', title: 'Microsoft Re-Score' },
   { comingSoon: true, title: 'Coming Soon' },
   { comingSoon: true, title: 'Coming Soon' },
-  { comingSoon: true, title: 'Coming Soon' },
+  { id: 'h7qu1eSXSsc', title: 'Nudnix App Sounds' },
+  { id: 'Ky0uchQ1W3o', title: 'Mingle Stinger' },
   { comingSoon: true, title: 'Coming Soon' },
 ];
 
@@ -30,6 +30,17 @@ for (const video of videos) {
     `;
     frame.addEventListener('click', () => {
       frame.innerHTML = `<iframe src="https://www.youtube.com/embed/${video.id}?autoplay=1&rel=0&modestbranding=1" title="${video.title}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+      // The iframe loads directly under the cursor, so it never gets a real
+      // "mouse entered" event and YouTube's control auto-hide timer never starts.
+      // Toggling pointer-events forces the browser to redo hit-testing, which
+      // triggers that event and lets the controls hide normally.
+      const iframe = frame.querySelector('iframe');
+      iframe.style.pointerEvents = 'none';
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          iframe.style.pointerEvents = 'auto';
+        });
+      });
     }, { once: true });
   }
 
